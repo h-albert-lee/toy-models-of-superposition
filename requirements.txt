@@ -1,0 +1,8 @@
+torch
+transformers
+pillow
+pandas
+pyyaml
+matplotlib
+plotly
+datasets

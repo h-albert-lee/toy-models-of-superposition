@@ -10,7 +10,9 @@ modify activations at arbitrary layers.
 
 from __future__ import annotations
 
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Sequence, Union
+
+import logging
 
 import torch
 from PIL import Image
@@ -32,6 +34,7 @@ class VLM_Wrapper:
     """
 
     def __init__(self, model_name: str, device: str = "cuda", **model_kwargs) -> None:
+        self.logger = logging.getLogger(__name__)
         self.device = device
         model_kwargs.setdefault("trust_remote_code", True)
 
@@ -91,14 +94,19 @@ class VLM_Wrapper:
     # Input preparation
     # ------------------------------------------------------------------
     def _prepare_inputs(
-        self, text_prompt: str, image: Optional[Image.Image] = None
+        self,
+        text_prompts: Sequence[str],
+        images: Optional[Sequence[Optional[Image.Image]]] = None,
     ) -> Dict[str, torch.Tensor]:
         if self.processor is not None:
             inputs = self.processor(
-                text=[text_prompt], images=image, return_tensors="pt"
+                text=list(text_prompts),
+                images=list(images) if images is not None else None,
+                return_tensors="pt",
+                padding=True,
             ).to(self.device)
         else:
-            inputs = self.tokenizer([text_prompt], return_tensors="pt").to(
+            inputs = self.tokenizer(list(text_prompts), return_tensors="pt", padding=True).to(
                 self.device
             )
         return inputs
@@ -107,21 +115,23 @@ class VLM_Wrapper:
     # Public API
     # ------------------------------------------------------------------
     def get_activations(
-        self, text_prompt: str, image: Optional[Image.Image], layers: List[str]
+        self,
+        text_prompts: Union[str, Sequence[str]],
+        images: Optional[Union[Image.Image, Sequence[Optional[Image.Image]]]],
+        layers: List[str],
     ) -> Dict[str, torch.Tensor]:
-        """Extract activations from specific layers.
+        """Extract activations from specific layers in batch."""
 
-        Parameters
-        ----------
-        text_prompt:
-            Input text provided to the model.
-        image:
-            Optional image paired with the text.
-        layers:
-            Names of the submodules to hook.
-        """
+        if isinstance(text_prompts, str):
+            text_prompts = [text_prompts]
+        if images is None:
+            images_seq: Optional[Sequence[Optional[Image.Image]]] = None
+        elif isinstance(images, Image.Image):
+            images_seq = [images]
+        else:
+            images_seq = images
 
-        inputs = self._prepare_inputs(text_prompt, image)
+        inputs = self._prepare_inputs(text_prompts, images_seq)
         activations = self._register_hooks(layers)
 
         with torch.no_grad():

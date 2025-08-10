@@ -4,12 +4,13 @@ device: "cuda"
 # optional arguments passed to `from_pretrained`
 model_kwargs: {}
 
-extraction_layer: "model.layers.30"
+extraction_layer: "language_model.layers.0"
+batch_size: 8
 data_sources:
-  toxic_neutral_pairs: "data/toxic_neutral_pairs.jsonl"  # or "user/dataset:split"
-  multimodal_test_cases: "data/multimodal_test_cases.jsonl"  # or "user/dataset:split"
+  toxic_neutral_pairs: "data/general_toxic_neutral_text_pairs.jsonl"
+  intrinsic_toxicity_cases: "data/intrinsic_toxicity_cases.jsonl"
 
-intervention_layer: "model.layers.30"
-intervention_multiplier: 1.2
+intervention_layer: "language_model.layers.0"
+intervention_multiplier: 1.0
 
-output_dir: "results/"
+output_dir: "results"

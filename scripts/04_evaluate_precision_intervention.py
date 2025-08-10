@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import argparse
 import json
+import logging
 from pathlib import Path
 
 import pandas as pd
 from PIL import Image
 from transformers import pipeline
 import torch
+import yaml
 
 from src.vlm_wrapper import VLM_Wrapper
 from src.interventions import vector_subtraction
@@ -19,12 +22,25 @@ def load_jsonl(path: str):
         return [json.loads(line) for line in f]
 
 
-def main() -> None:
-    wrapper = VLM_Wrapper("llava-hf/llava-1.5-7b-hf")
-    layer = "language_model.layers.0"
-    itv = torch.load("results/intrinsic_toxicity_vector.pt")
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Evaluate precision intervention")
+    parser.add_argument("--config", type=str, default="configs/base_config.yaml")
+    return parser.parse_args()
 
-    cases = load_jsonl("data/intrinsic_toxicity_cases.jsonl")
+
+def main() -> None:
+    args = parse_args()
+    with open(args.config, "r", encoding="utf-8") as f:
+        cfg = yaml.safe_load(f)
+
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    wrapper = VLM_Wrapper(cfg["model_name"], device=cfg.get("device", "cuda"), **cfg.get("model_kwargs", {}))
+    layer = cfg["intervention_layer"]
+    itv = torch.load(Path(cfg["output_dir"]) / "intrinsic_toxicity_vector.pt")
+
+    cases = load_jsonl(cfg["data_sources"]["intrinsic_toxicity_cases"])
     clf = pipeline("text-classification", model="unitary/unbiased-toxic-roberta")
 
     records = []
@@ -55,8 +71,11 @@ def main() -> None:
         )
 
     df = pd.DataFrame(records)
-    Path("results").mkdir(exist_ok=True)
-    df.to_csv("results/precision_intervention.csv", index=False)
+    out_dir = Path(cfg["output_dir"])
+    out_dir.mkdir(exist_ok=True, parents=True)
+    out_path = out_dir / "precision_intervention.csv"
+    df.to_csv(out_path, index=False)
+    logger.info("Saved evaluation to %s", out_path)
 
 
 if __name__ == "__main__":

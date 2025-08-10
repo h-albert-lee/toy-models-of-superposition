@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import argparse
 import json
+import logging
 from pathlib import Path
 
 import torch
+import yaml
 from PIL import Image
 
 from src.vlm_wrapper import VLM_Wrapper
@@ -17,11 +20,24 @@ def load_jsonl(path: str):
         return [json.loads(line) for line in f]
 
 
-def main() -> None:
-    wrapper = VLM_Wrapper("llava-hf/llava-1.5-7b-hf")
-    extractor = VectorExtractor(wrapper, layer="language_model.layers.0")
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Compute the intrinsic toxicity vector")
+    parser.add_argument("--config", type=str, default="configs/base_config.yaml")
+    return parser.parse_args()
 
-    raw = load_jsonl("data/intrinsic_toxicity_cases.jsonl")
+
+def main() -> None:
+    args = parse_args()
+    with open(args.config, "r", encoding="utf-8") as f:
+        cfg = yaml.safe_load(f)
+
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    wrapper = VLM_Wrapper(cfg["model_name"], device=cfg.get("device", "cuda"), **cfg.get("model_kwargs", {}))
+    extractor = VectorExtractor(wrapper, layer=cfg["extraction_layer"], batch_size=cfg.get("batch_size", 8))
+
+    raw = load_jsonl(cfg["data_sources"]["intrinsic_toxicity_cases"])
     data = []
     for item in raw:
         img = Image.open(item["image_path"]).convert("RGB")
@@ -29,8 +45,11 @@ def main() -> None:
 
     itv = extractor.compute_itv(data)
 
-    Path("results").mkdir(exist_ok=True)
-    torch.save(itv, "results/intrinsic_toxicity_vector.pt")
+    out_dir = Path(cfg["output_dir"])
+    out_dir.mkdir(exist_ok=True, parents=True)
+    out_path = out_dir / "intrinsic_toxicity_vector.pt"
+    torch.save(itv, out_path)
+    logger.info("Saved ITV to %s", out_path)
 
 
 if __name__ == "__main__":

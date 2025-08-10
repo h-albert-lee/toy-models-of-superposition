@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from typing import List, Dict
+from typing import Dict, Sequence
 
+import logging
 import torch
 from PIL import Image
 
@@ -13,14 +14,16 @@ from .vlm_wrapper import VLM_Wrapper
 class VectorExtractor:
     """Compute general and intrinsic toxicity vectors using a VLM."""
 
-    def __init__(self, wrapper: VLM_Wrapper, layer: str) -> None:
+    def __init__(self, wrapper: VLM_Wrapper, layer: str, batch_size: int = 8) -> None:
         self.wrapper = wrapper
         self.layer = layer
+        self.batch_size = batch_size
+        self.logger = logging.getLogger(__name__)
 
     # ------------------------------------------------------------------
     # General toxicity vector
     # ------------------------------------------------------------------
-    def compute_gtv(self, data: List[Dict[str, str]]) -> torch.Tensor:
+    def compute_gtv(self, data: Sequence[Dict[str, str]]) -> torch.Tensor:
         """Compute the general toxicity vector (GTV).
 
         Parameters
@@ -31,21 +34,22 @@ class VectorExtractor:
         """
 
         diffs = []
-        for item in data:
-            toxic_act = self.wrapper.get_activations(
-                item["toxic_text"], None, [self.layer]
-            )[self.layer]
-            neutral_act = self.wrapper.get_activations(
-                item["neutral_text"], None, [self.layer]
-            )[self.layer]
+        toxic_texts = [item["toxic_text"] for item in data]
+        neutral_texts = [item["neutral_text"] for item in data]
+        for i in range(0, len(data), self.batch_size):
+            t_batch = toxic_texts[i : i + self.batch_size]
+            n_batch = neutral_texts[i : i + self.batch_size]
+            toxic_act = self.wrapper.get_activations(t_batch, None, [self.layer])[self.layer]
+            neutral_act = self.wrapper.get_activations(n_batch, None, [self.layer])[self.layer]
             diffs.append(toxic_act - neutral_act)
+            self.logger.debug("Processed GTV batch %d-%d", i, i + len(t_batch))
 
-        return torch.stack(diffs).mean(dim=0)
+        return torch.cat(diffs, dim=0).mean(dim=0)
 
     # ------------------------------------------------------------------
     # Intrinsic toxicity vector
     # ------------------------------------------------------------------
-    def compute_itv(self, data: List[Dict[str, object]]) -> torch.Tensor:
+    def compute_itv(self, data: Sequence[Dict[str, object]]) -> torch.Tensor:
         """Compute the intrinsic toxicity vector (ITV).
 
         Each item in ``data`` should contain keys ``text`` and ``image``
@@ -53,25 +57,29 @@ class VectorExtractor:
         """
 
         residuals = []
-        for item in data:
-            text = str(item["text"])
-            image = item["image"]
-            if isinstance(image, str):
-                image = Image.open(image).convert("RGB")
+        for i in range(0, len(data), self.batch_size):
+            batch = data[i : i + self.batch_size]
+            texts = [str(item["text"]) for item in batch]
+            images = []
+            for item in batch:
+                img = item["image"]
+                if isinstance(img, str):
+                    img = Image.open(img).convert("RGB")
+                images.append(img)
 
-            text_act = self.wrapper.get_activations(text, None, [self.layer])[
-                self.layer
-            ]
-            image_act = self.wrapper.get_activations("", image, [self.layer])[
-                self.layer
-            ]
-            fused_act = self.wrapper.get_activations(text, image, [self.layer])[
-                self.layer
-            ]
+            text_act = self.wrapper.get_activations(texts, None, [self.layer])[self.layer]
+            image_act = self.wrapper.get_activations(["" for _ in images], images, [self.layer])[self.layer]
+            fused_act = self.wrapper.get_activations(texts, images, [self.layer])[self.layer]
 
             residuals.append(fused_act - (text_act + image_act))
+            self.logger.debug("Processed ITV batch %d-%d", i, i + len(batch))
 
-        return torch.stack(residuals).mean(dim=0)
+            # Free image resources to avoid file handles accumulation
+            for img in images:
+                if isinstance(img, Image.Image):
+                    img.close()
+
+        return torch.cat(residuals, dim=0).mean(dim=0)
 
 
 __all__ = ["VectorExtractor"]

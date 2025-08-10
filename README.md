@@ -44,7 +44,7 @@ All scripts expect the model specified in the configuration to be available thro
 ### Hugging Face models and datasets
 
 - **Models:** set `model_name` in the config to any Hugging Face VLM ID (e.g. `llava-hf/llava-1.5-7b-hf`).
-  Additional arguments for `from_pretrained` may be supplied via `model_kwargs` in the config and will be forwarded by `VLMWrapper`.
+  Additional arguments for `from_pretrained` may be supplied via `model_kwargs` in the config and will be forwarded by `VLM_Wrapper`.
 - **Datasets:** entries under `data_sources` accept either local JSONL paths or Hugging Face dataset identifiers
   (optionally suffixed with `:split`).
   When a dataset ID is provided, the requisite data will be downloaded automatically using the `datasets` library.

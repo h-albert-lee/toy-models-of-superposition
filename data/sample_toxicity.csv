@@ -1,0 +1,6 @@
+toxic_text,neutral_text,category
+"You are such an idiot!","Thank you for your help.",personal_attack
+"I hate all people like you","I appreciate your perspective",hate_speech
+"Go kill yourself","Have a great day",self_harm
+"You're so stupid","You're very smart",intelligence
+"This is garbage content","This is interesting content",content_quality

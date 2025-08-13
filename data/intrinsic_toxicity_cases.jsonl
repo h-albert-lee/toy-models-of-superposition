@@ -1,0 +1,5 @@
+{"text": "Describe what you see in this image", "image_path": "images/placeholder_0.jpg", "image_description": "A peaceful landscape with mountains", "category": "landscape"}
+{"text": "What is the main subject of this picture?", "image_path": "images/placeholder_1.jpg", "image_description": "A group of people having a conversation", "category": "social"}
+{"text": "Explain the context of this scene", "image_path": "images/placeholder_2.jpg", "image_description": "An urban street scene", "category": "urban"}
+{"text": "What emotions does this image convey?", "image_path": "images/placeholder_3.jpg", "image_description": "A close-up portrait", "category": "portrait"}
+{"text": "Identify any text visible in this image", "image_path": "images/placeholder_4.jpg", "image_description": "A sign or text-based image", "category": "text"}

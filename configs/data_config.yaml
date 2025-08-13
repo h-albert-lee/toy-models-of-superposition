@@ -1,0 +1,78 @@
+# Configuration for dataset preparation
+
+datasets:
+  jigsaw:
+    max_samples: 500
+    toxicity_threshold: 0.6
+    
+  hate_speech:
+    max_samples: 300
+    
+  real_toxicity:
+    max_samples: 300
+    toxicity_threshold: 0.5
+    
+  multilingual:
+    max_samples: 200
+    language: "en"
+
+# Output settings
+output_settings:
+  max_total_samples: 2000
+  train_split: 0.8
+  val_split: 0.1
+  test_split: 0.1
+  
+# Data quality filters
+quality_filters:
+  min_text_length: 10
+  max_text_length: 500
+  remove_duplicates: true
+  remove_urls: true
+  remove_mentions: false  # Keep @mentions for social media context
+
+# Multimodal test cases
+multimodal_cases:
+  categories:
+    - "general"
+    - "social"
+    - "landscape" 
+    - "portrait"
+    - "text"
+    - "urban"
+  
+  sample_prompts:
+    - "Describe what you see in this image"
+    - "What is the main subject of this picture?"
+    - "Explain the context of this scene"
+    - "What emotions does this image convey?"
+    - "Identify any text visible in this image"
+    - "What activities are happening here?"
+    - "Describe the setting and atmosphere"
+    - "What objects can you identify?"
+    
+# Synthetic data generation (for when real neutral pairs are limited)
+synthetic_generation:
+  enabled: true
+  methods:
+    - "word_replacement"  # Simple word substitution
+    - "negation_removal"  # Remove negative words
+    - "tone_softening"    # Make language less harsh
+  
+  word_replacements:
+    # Offensive -> Neutral mappings
+    "hate": "dislike"
+    "stupid": "unwise"
+    "idiot": "person"
+    "dumb": "quiet"
+    "moron": "individual"
+    "fool": "person"
+    "loser": "person"
+    "pathetic": "unfortunate"
+    "worthless": "valuable"
+    "useless": "useful"
+    "disgusting": "unpleasant"
+    "awful": "challenging"
+    "terrible": "difficult"
+    "horrible": "unpleasant"
+    "trash": "item"

@@ -1,0 +1,116 @@
+# Flexible data loading configuration
+
+# Multiple loaders can be combined
+loaders:
+  # Hugging Face datasets
+  hate_speech:
+    max_samples: 300
+    weight: 1.0
+    
+  real_toxicity:
+    max_samples: 300
+    toxicity_threshold: 0.6
+    weight: 1.0
+    
+  multilingual:
+    max_samples: 200
+    language: "en"
+    weight: 0.5
+  
+  # Custom file loaders
+  # csv:
+  #   file_path: "path/to/your/toxicity_data.csv"
+  #   toxic_column: "toxic_text"
+  #   neutral_column: "neutral_text"
+  #   max_samples: 500
+  #   weight: 1.0
+  
+  # jsonl:
+  #   file_path: "path/to/your/data.jsonl"
+  #   max_samples: 400
+  #   weight: 1.0
+  
+  # local:
+  #   path: "path/to/data/directory"
+  #   pattern: "*.csv"
+  #   recursive: true
+  #   max_samples: 600
+  #   weight: 1.0
+  
+  # multimodal:
+  #   file_path: "path/to/multimodal_metadata.jsonl"
+  #   image_base_path: "path/to/images/"
+  #   load_images: false  # Set to true to load actual PIL images
+  #   max_samples: 100
+  #   weight: 0.5
+  
+  # api:
+  #   api_url: "https://api.example.com/toxicity-data"
+  #   headers:
+  #     Authorization: "Bearer YOUR_TOKEN"
+  #   params:
+  #     format: "json"
+  #     limit: 1000
+  #   max_samples: 500
+  #   weight: 1.0
+
+# Global settings
+global_settings:
+  max_total_samples: 2000
+  combination_strategy: "balanced"  # balanced, weighted, sequential
+  
+  # Quality filters
+  min_text_length: 10
+  max_text_length: 1000
+  remove_duplicates: true
+  
+  # Output settings
+  output_format: "jsonl"
+  shuffle_final: true
+
+# Example configurations for different use cases
+examples:
+  # Research with multiple HF datasets
+  research_config:
+    loaders:
+      hate_speech:
+        max_samples: 500
+      real_toxicity:
+        max_samples: 500
+        toxicity_threshold: 0.7
+      multilingual:
+        max_samples: 300
+        language: "en"
+    global_settings:
+      combination_strategy: "balanced"
+      max_total_samples: 1500
+  
+  # Production with custom data
+  production_config:
+    loaders:
+      csv:
+        file_path: "production_data.csv"
+        toxic_column: "harmful_text"
+        neutral_column: "safe_text"
+        max_samples: 2000
+      jsonl:
+        file_path: "additional_data.jsonl"
+        max_samples: 1000
+    global_settings:
+      combination_strategy: "weighted"
+      max_total_samples: 3000
+  
+  # Multimodal research
+  multimodal_config:
+    loaders:
+      hate_speech:
+        max_samples: 200
+        weight: 0.5
+      multimodal:
+        file_path: "multimodal_cases.jsonl"
+        image_base_path: "images/"
+        max_samples: 100
+        weight: 1.0
+    global_settings:
+      combination_strategy: "weighted"
+      max_total_samples: 300

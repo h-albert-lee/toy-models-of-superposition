@@ -1,0 +1,210 @@
+{
+  "basic_stats": {
+    "total_samples": 250,
+    "has_toxic_text": 250,
+    "has_neutral_text": 250,
+    "has_image_path": 0,
+    "unique_categories": 1
+  },
+  "length_stats": {
+    "toxic_length_stats": {
+      "mean": 73.656,
+      "median": 68,
+      "min": 16,
+      "max": 167,
+      "std": 31.61230241535722
+    },
+    "neutral_length_stats": {
+      "mean": 85.708,
+      "median": 75,
+      "min": 12,
+      "max": 522,
+      "std": 47.08510099808643
+    }
+  },
+  "vocab_stats": {
+    "toxic_vocab_size": 1362,
+    "neutral_vocab_size": 1694,
+    "toxic_distinctive_words": [
+      [
+        "bitch",
+        Infinity
+      ],
+      [
+        "bitches",
+        Infinity
+      ],
+      [
+        "hoes",
+        Infinity
+      ],
+      [
+        "pussy",
+        Infinity
+      ],
+      [
+        "nigga",
+        Infinity
+      ],
+      [
+        "shit",
+        Infinity
+      ],
+      [
+        "ass",
+        Infinity
+      ],
+      [
+        "fuck",
+        Infinity
+      ],
+      [
+        "stupid",
+        Infinity
+      ],
+      [
+        "women",
+        Infinity
+      ],
+      [
+        "fucking",
+        Infinity
+      ],
+      [
+        "hoe",
+        Infinity
+      ],
+      [
+        "oh",
+        Infinity
+      ],
+      [
+        "used",
+        Infinity
+      ],
+      [
+        "most",
+        Infinity
+      ],
+      [
+        "sex",
+        Infinity
+      ],
+      [
+        "called",
+        6.743757431629013
+      ],
+      [
+        "ya",
+        6.743757431629013
+      ],
+      [
+        "ain",
+        6.743757431629013
+      ],
+      [
+        "more",
+        6.743757431629013
+      ]
+    ],
+    "neutral_distinctive_words": [
+      [
+        "1575",
+        Infinity
+      ],
+      [
+        "bird",
+        Infinity
+      ],
+      [
+        "yankees",
+        Infinity
+      ],
+      [
+        "1604",
+        Infinity
+      ],
+      [
+        "yellow",
+        Infinity
+      ],
+      [
+        "gt",
+        Infinity
+      ],
+      [
+        "1585",
+        Infinity
+      ],
+      [
+        "monkey",
+        Infinity
+      ],
+      [
+        "ghetto",
+        6.227982015339857
+      ],
+      [
+        "going",
+        6.227982015339857
+      ],
+      [
+        "around",
+        5.338270298862735
+      ],
+      [
+        "would",
+        4.448558582385612
+      ],
+      [
+        "want",
+        4.448558582385612
+      ],
+      [
+        "by",
+        3.2622762937494487
+      ],
+      [
+        "make",
+        3.1139910076699286
+      ],
+      [
+        "now",
+        3.1139910076699286
+      ],
+      [
+        "back",
+        3.1139910076699286
+      ],
+      [
+        "8230",
+        2.8915630785506483
+      ],
+      [
+        "after",
+        2.6691351494313675
+      ],
+      [
+        "game",
+        2.6691351494313675
+      ]
+    ],
+    "shared_vocab_size": 418
+  },
+  "similarity_stats": {
+    "mean_similarity": 0.011517305685891214,
+    "median_similarity": 0.0,
+    "min_similarity": 0.0,
+    "max_similarity": 0.44126557124804966,
+    "high_similarity_pairs": 0,
+    "low_similarity_pairs": 244
+  },
+  "quality_issues": {
+    "empty_texts": 0,
+    "very_short_texts": 0,
+    "very_long_texts": 1,
+    "duplicate_pairs": 0,
+    "identical_pairs": 0,
+    "missing_fields": 0
+  }
+}

@@ -178,21 +178,23 @@ class RealToxicityPromptsLoader(BaseDataLoader, PairCreatorMixin):
         return self._create_pairs(toxic_prompts, neutral_prompts, max_samples)
 
 
-class MultilingualToxicityLoader(BaseDataLoader, PairCreatorMixin):
-    """Loader for multilingual toxicity dataset."""
+class MultilingualToxicityLoader(BaseDataLoader):
+    """Loader for multilingual toxicity dataset (toxic samples only for superposition analysis)."""
     
     def get_info(self) -> Dict[str, Any]:
         return {
-            "name": "Multilingual Toxicity",
-            "description": "Multi-language toxicity detection dataset",
+            "name": "Multilingual Toxicity Dataset (Toxic Only)",
+            "description": "Multi-language toxicity detection dataset - toxic samples only for superposition analysis",
             "source": "textdetox/multilingual_toxicity_dataset",
-            "type": "text_pairs",
-            "languages": ["en", "ru", "uk", "de", "es", "fr", "it", "zh", "ar", "hi"],
-            "size": "~50k texts per language"
+            "type": "toxic_text",
+            "languages": ["en", "ru", "uk", "de", "es", "fr", "it", "zh", "ar", "hi", "am", "he", "hin", "tt", "ja"],
+            "size": "~2.5k toxic samples per language",
+            "default_language": "en",
+            "default_max_samples": 200
         }
     
     def load(self, **kwargs) -> List[Dict[str, Any]]:
-        max_samples = kwargs.get('max_samples', 1000)
+        max_samples = kwargs.get('max_samples', 200)
         language = kwargs.get('language', 'en')
         
         try:
@@ -201,27 +203,107 @@ class MultilingualToxicityLoader(BaseDataLoader, PairCreatorMixin):
             self.logger.error(f"Failed to load multilingual toxicity dataset: {e}")
             return []
         
-        toxic_texts = []
-        neutral_texts = []
+        toxic_samples = []
         
-        for item in dataset:
-            text = item.get("text", "").strip()
-            is_toxic = item.get("is_toxic", False)
+        # Extract texts and labels
+        texts = dataset['text']
+        labels = dataset['toxic']
+        
+        for text, is_toxic in zip(texts, labels):
+            text = text.strip()
             
             if not text or len(text) < 10:
                 continue
             
-            if is_toxic:
-                toxic_texts.append(text)
-            else:
-                neutral_texts.append(text)
+            # Only collect toxic samples (label == 1)
+            if is_toxic == 1:
+                toxic_samples.append({
+                    "text": text,
+                    "is_toxic": True,
+                    "language": language,
+                    "source": "multilingual_toxicity_dataset"
+                })
+                
+                # Stop if we've reached the max samples
+                if len(toxic_samples) >= max_samples:
+                    break
         
-        return self._create_pairs(toxic_texts, neutral_texts, max_samples)
+        self.logger.info(f"Loaded {len(toxic_samples)} toxic samples (max_samples={max_samples})")
+        return toxic_samples
+
+
+class MemeSafetyBenchLoader(BaseDataLoader):
+    """Loader for Meme-Safety-Bench dataset (negative/unsafe samples only for superposition analysis)."""
+    
+    def get_info(self) -> Dict[str, Any]:
+        return {
+            "name": "Meme-Safety-Bench (Unsafe Only)",
+            "description": "VLM safety benchmark - unsafe/negative meme samples only for superposition analysis",
+            "source": "oneonlee/Meme-Safety-Bench",
+            "type": "multimodal_unsafe",
+            "languages": ["en"],
+            "size": "~500 unsafe meme samples",
+            "modalities": ["text", "image"],
+            "default_max_samples": 200
+        }
+    
+    def load(self, **kwargs) -> List[Dict[str, Any]]:
+        max_samples = kwargs.get('max_samples', 200)
+        
+        try:
+            # Try to load the dataset
+            dataset = load_dataset("oneonlee/Meme-Safety-Bench", split="train")
+        except Exception as e:
+            self.logger.error(f"Failed to load Meme-Safety-Bench dataset: {e}")
+            self.logger.info("This dataset may require authentication or may not be publicly accessible")
+            return []
+        
+        unsafe_samples = []
+        
+        for item in dataset:
+            # Extract relevant fields (adapt based on actual dataset structure)
+            text = item.get("text", "").strip()
+            image = item.get("image")  # PIL Image
+            label = item.get("label", 0)  # Safety label
+            sentiment = item.get("sentiment", "neutral")  # Sentiment field
+            
+            if not text and not image:
+                continue
+            
+            # Only collect unsafe/negative samples
+            # Check multiple possible indicators for unsafe content
+            is_unsafe = (
+                label == 1 or  # Assume 1 = unsafe, 0 = safe
+                sentiment == "negative" or
+                item.get("is_safe", True) == False or
+                item.get("toxic", False) == True
+            )
+            
+            if is_unsafe:
+                sample = {
+                    "text": text,
+                    "image": image,
+                    "is_safe": False,
+                    "sentiment": sentiment,
+                    "label": label,
+                    "category": item.get("category", "meme"),
+                    "source": "meme_safety_bench"
+                }
+                
+                unsafe_samples.append(sample)
+                
+                # Stop if we've reached the max samples
+                if len(unsafe_samples) >= max_samples:
+                    break
+        
+        self.logger.info(f"Loaded {len(unsafe_samples)} unsafe multimodal samples (max_samples={max_samples})")
+        return unsafe_samples
 
 
 __all__ = [
     "JigsawToxicityLoader",
     "HateSpeechOffensiveLoader", 
     "RealToxicityPromptsLoader",
-    "MultilingualToxicityLoader"
+    "MultilingualToxicityLoader",
+    "MemeSafetyBenchLoader"
 ]

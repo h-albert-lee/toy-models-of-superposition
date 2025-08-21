@@ -1,0 +1,99 @@
+# Benchmark Configuration for VLM Toxicity Analysis
+# This configuration sets up the recommended benchmark datasets
+
+# Primary benchmark datasets (toxic/unsafe samples only for superposition analysis)
+benchmark_datasets:
+  # VLM (Vision-Language Model) benchmark - unsafe samples only
+  vlm_benchmark:
+    loader: "MemeSafetyBenchLoader"
+    description: "Multimodal safety benchmark - unsafe/negative meme samples only"
+    max_samples: 200
+    priority: 1
+    type: "multimodal_unsafe"
+    
+  # Text-only benchmark - toxic samples only
+  text_benchmark:
+    loader: "MultilingualToxicityLoader"
+    description: "Text toxicity benchmark - toxic samples only (English subset)"
+    max_samples: 200
+    language: "en"
+    priority: 1
+    type: "toxic_text"
+
+# Alternative/supplementary datasets
+supplementary_datasets:
+  jigsaw:
+    loader: "JigsawToxicityLoader"
+    max_samples: 500
+    toxicity_threshold: 0.6
+    priority: 2
+    
+  hate_speech:
+    loader: "HateSpeechOffensiveLoader"
+    max_samples: 300
+    priority: 2
+    
+  real_toxicity:
+    loader: "RealToxicityPromptsLoader"
+    max_samples: 300
+    toxicity_threshold: 0.5
+    priority: 2
+
+# Combination strategies for multiple datasets
+combination_strategies:
+  benchmark_only:
+    description: "Use only primary benchmark datasets"
+    datasets:
+      - vlm_benchmark
+      - text_benchmark
+    strategy: "balanced"
+    
+  comprehensive:
+    description: "Use all available datasets with priority weighting"
+    datasets:
+      - vlm_benchmark
+      - text_benchmark
+      - jigsaw
+      - hate_speech
+      - real_toxicity
+    strategy: "weighted"
+    
+  text_only:
+    description: "Text-only evaluation using multilingual toxicity dataset"
+    datasets:
+      - text_benchmark
+    strategy: "balanced"
+    
+  multimodal_only:
+    description: "VLM-only evaluation using meme safety benchmark"
+    datasets:
+      - vlm_benchmark
+    strategy: "balanced"
+
+# Output settings
+output_settings:
+  max_total_samples: 2000
+  train_split: 0.8
+  val_split: 0.1
+  test_split: 0.1
+  
+# Data quality filters
+quality_filters:
+  min_text_length: 10
+  max_text_length: 500
+  remove_duplicates: true
+  remove_urls: true
+  remove_mentions: false  # Keep @mentions for social media context
+
+# Default configuration
+default:
+  strategy: "benchmark_only"
+  max_samples: 200  # Reduced for superposition analysis
+  language: "en"
+  
+# Notes for superposition analysis
+analysis_notes:
+  purpose: "VLM toxicity superposition analysis"
+  data_type: "toxic/unsafe samples only"
+  recommended_sample_size: 200
+  rationale: "Focus on problematic content to analyze toxicity representations in VLM feature space"

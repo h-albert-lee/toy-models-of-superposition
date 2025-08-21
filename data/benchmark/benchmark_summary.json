@@ -1,0 +1,14 @@
+{
+  "strategy": "text_only",
+  "max_samples_per_dataset": 10,
+  "language": "en",
+  "total_samples": 10,
+  "datasets_prepared": [
+    {
+      "name": "text_benchmark",
+      "loader": "MultilingualToxicityLoader",
+      "source": "textdetox/multilingual_toxicity_dataset",
+      "samples": 10
+    }
+  ]
+}

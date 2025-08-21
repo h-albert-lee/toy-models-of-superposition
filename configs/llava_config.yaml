@@ -1,0 +1,12 @@
+# configs/early_layer_exp.yaml
+model_name: "AIML-TUDA/LlavaGuard-v1.2-0.5B-OV-hf"
+device: "cuda"
+
+extraction_layer: "language_model.layers.2"  # early-layer experiment
+batch_size: 8
+
+data_sources:
+  toxic_neutral_pairs: "data/general_toxic_neutral_text_pairs.jsonl"
+  intrinsic_toxicity_cases: "data/intrinsic_toxicity_cases.jsonl"
+
+output_dir: "results"

@@ -1,0 +1,19 @@
+model_name: "llava-hf/llava-1.5-7b-hf"
+device: "cuda"
+
+# optional arguments passed to `from_pretrained`
+model_kwargs: {}
+
+extraction_layer: "language_model.layers.0"
+batch_size: 8
+data_sources:
+  toxic_neutral_pairs: "data/general_toxic_neutral_text_pairs.jsonl"
+  intrinsic_toxicity_cases: "data/intrinsic_toxicity_cases.jsonl"
+
+# Use a custom field name for image paths in the dataset
+image_key: "image_file"
+
+intervention_layer: "language_model.layers.0"
+intervention_multiplier: 1.0
+
+output_dir: "results"

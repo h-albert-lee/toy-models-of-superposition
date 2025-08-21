@@ -38,9 +38,12 @@ def main() -> None:
     extractor = VectorExtractor(wrapper, layer=cfg["extraction_layer"], batch_size=cfg.get("batch_size", 8))
 
     raw = load_jsonl(cfg["data_sources"]["intrinsic_toxicity_cases"])
+    image_key = cfg.get("image_key", "image_path")
     data = []
     for item in raw:
-        img = Image.open(item["image_path"]).convert("RGB")
+        if image_key not in item:
+            raise ValueError(f"Missing image key '{image_key}' in data item: {item}")
+        img = Image.open(item[image_key]).convert("RGB")
         data.append({"text": item["text"], "image": img})
 
     itv = extractor.compute_itv(data)

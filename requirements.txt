@@ -8,3 +8,4 @@ plotly
 datasets
 requests
 scikit-learn
+tqdm

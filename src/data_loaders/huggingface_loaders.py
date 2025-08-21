@@ -7,7 +7,8 @@ from typing import Any, Dict, List
 
 from datasets import load_dataset
 from PIL import Image
-
+import os
+from tqdm import tqdm
 from .base import BaseDataLoader
 
 
@@ -233,71 +234,75 @@ class MultilingualToxicityLoader(BaseDataLoader):
 
 
 class MemeSafetyBenchLoader(BaseDataLoader):
-    """Loader for Meme-Safety-Bench dataset (negative/unsafe samples only for superposition analysis)."""
+    """
+    Loader for the AIML-TUDA/Meme-Safety-Bench dataset.
+    Filters for samples where 'sentiment' is 'negative',
+    saves images to files, and returns paths.
+    """
     
     def get_info(self) -> Dict[str, Any]:
         return {
-            "name": "Meme-Safety-Bench (Unsafe Only)",
-            "description": "VLM safety benchmark - unsafe/negative meme samples only for superposition analysis",
-            "source": "oneonlee/Meme-Safety-Bench",
+            "name": "Meme-Safety-Bench (Negative Sentiment Only)",
+            "description": "VLM safety benchmark, filtering for negative sentiment samples.",
+            "source": "AIML-TUDA/Meme-Safety-Bench",
             "type": "multimodal_unsafe",
             "languages": ["en"],
-            "size": "~500 unsafe meme samples",
+            "size": "Variable, depends on filtering",
             "modalities": ["text", "image"],
-            "default_max_samples": 200
+            "default_max_samples": 200 # <-- 기본 샘플 수를 다시 200으로 설정해도 좋습니다.
         }
     
     def load(self, **kwargs) -> List[Dict[str, Any]]:
-        max_samples = kwargs.get('max_samples', 200)
+        max_samples = kwargs.get('max_samples', self.get_info()['default_max_samples'])
+        
+        # 1. 이미지를 저장할 폴더 경로를 지정하고, 없으면 생성합니다.
+        image_save_dir = os.path.join("data", "meme_images")
+        os.makedirs(image_save_dir, exist_ok=True)
         
         try:
-            # Try to load the dataset
-            dataset = load_dataset("oneonlee/Meme-Safety-Bench", split="train")
+            dataset = load_dataset("AIML-TUDA/Meme-Safety-Bench", split="test")
         except Exception as e:
-            self.logger.error(f"Failed to load Meme-Safety-Bench dataset: {e}")
-            self.logger.info("This dataset may require authentication or may not be publicly accessible")
+            self.logger.error(f"Failed to load AIML-TUDA/Meme-Safety-Bench dataset: {e}")
             return []
         
         unsafe_samples = []
         
-        for item in dataset:
-            # Extract relevant fields (adapt based on actual dataset structure)
-            text = item.get("text", "").strip()
-            image = item.get("image")  # PIL Image
-            label = item.get("label", 0)  # Safety label
-            sentiment = item.get("sentiment", "neutral")  # Sentiment field
-            
-            if not text and not image:
-                continue
-            
-            # Only collect unsafe/negative samples
-            # Check multiple possible indicators for unsafe content
-            is_unsafe = (
-                label == 1 or  # Assume 1 = unsafe, 0 = safe
-                sentiment == "negative" or
-                item.get("is_safe", True) == False or
-                item.get("toxic", False) == True
-            )
-            
-            if is_unsafe:
-                sample = {
-                    "text": text,
-                    "image": image,
-                    "is_safe": False,
-                    "sentiment": sentiment,
-                    "label": label,
-                    "category": item.get("category", "meme"),
-                    "source": "meme_safety_bench"
-                }
+        for i, item in enumerate(tqdm(dataset, desc="Filtering and saving images")):
+            if len(unsafe_samples) >= max_samples:
+                self.logger.info(f"Reached max_samples limit of {max_samples}.")
+                break
+
+            sentiment = item.get("sentiment")
+
+            if sentiment == "negative":
+                image_obj = item.get("meme_image")
                 
-                unsafe_samples.append(sample)
-                
-                # Stop if we've reached the max samples
-                if len(unsafe_samples) >= max_samples:
-                    break
+                # 2. 이미지 객체가 존재하면 파일로 저장합니다.
+                if image_obj:
+                    # 파일 이름을 고유하게 만듭니다 (예: meme_0.png, meme_1.png, ...)
+                    image_filename = f"meme_{i}.png"
+                    image_path = os.path.join(image_save_dir, image_filename)
+                    
+                    try:
+                        image_obj.save(image_path)
+                    except Exception as e:
+                        self.logger.warning(f"Could not save image for item {i}: {e}")
+                        continue # 이미지 저장 실패 시 이 샘플은 건너뜁니다.
+
+                    # 3. JSON에 저장할 sample 딕셔너리를 만듭니다.
+                    sample = {
+                        "text": item.get("instruction", "").strip(),
+                        # 'image' 대신 저장된 파일 경로 'image_file'을 저장합니다.
+                        "image_file": image_path,
+                        "is_safe": False,
+                        "sentiment": sentiment,
+                        "source": "meme_safety_bench"
+                    }
+                    unsafe_samples.append(sample)
         
-        self.logger.info(f"Loaded {len(unsafe_samples)} unsafe multimodal samples (max_samples={max_samples})")
+        self.logger.info(f"Loaded and processed {len(unsafe_samples)} samples with negative sentiment.")
         return unsafe_samples
+
 
 
 __all__ = [

@@ -5,7 +5,8 @@ from .huggingface_loaders import (
     JigsawToxicityLoader,
     HateSpeechOffensiveLoader,
     RealToxicityPromptsLoader,
-    MultilingualToxicityLoader
+    MultilingualToxicityLoader,
+    MemeSafetyBenchLoader
 )
 from .custom_loaders import (
     CSVLoader,
@@ -23,6 +24,11 @@ registry.register("jigsaw", JigsawToxicityLoader)
 registry.register("hate_speech", HateSpeechOffensiveLoader)
 registry.register("real_toxicity", RealToxicityPromptsLoader)
 registry.register("multilingual", MultilingualToxicityLoader)
+registry.register("meme_safety_bench", MemeSafetyBenchLoader)
+
+# Register benchmark aliases for easy access
+registry.register("MemeSafetyBenchLoader", MemeSafetyBenchLoader)
+registry.register("MultilingualToxicityLoader", MultilingualToxicityLoader)
 
 # Register custom loaders
 registry.register("csv", CSVLoader)
@@ -45,6 +51,7 @@ __all__ = [
     "HateSpeechOffensiveLoader",
     "RealToxicityPromptsLoader",
     "MultilingualToxicityLoader",
+    "MemeSafetyBenchLoader",
     # Custom loaders
     "CSVLoader",
     "JSONLLoader",

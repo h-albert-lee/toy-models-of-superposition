@@ -21,23 +21,47 @@ pip install -r requirements.txt
 
 ### Data Preparation
 
+#### Benchmark Datasets for Toxicity Superposition Analysis
+
+The toolkit is pre-configured with standardized benchmark datasets optimized for VLM toxicity superposition analysis:
+
+- **VLM Benchmark**: `oneonlee/Meme-Safety-Bench` (unsafe/negative meme samples only)
+- **Text Benchmark**: `textdetox/multilingual_toxicity_dataset` (toxic samples only, English subset)
+
+**Quick Start - Prepare Benchmark Datasets:**
+```bash
+# Prepare both text and VLM benchmarks (200 samples each)
+python scripts/prepare_benchmark_datasets.py --strategy benchmark_only
+
+# Text-only benchmark
+python scripts/prepare_benchmark_datasets.py --strategy text_only --max-samples 100
+
+# Custom sample size
+python scripts/prepare_benchmark_datasets.py --max-samples 50
+```
+
 #### Flexible Data Loading System
 
-The toolkit includes a flexible, plugin-based data loading system that supports multiple data sources:
+The toolkit also includes a flexible, plugin-based data loading system for custom datasets:
 
 1. **List available loaders**
    ```bash
    python scripts/prepare_datasets.py --list-loaders
    ```
 
-2. **Get information about a specific loader**
+2. **Get information about benchmark loaders**
    ```bash
-   python scripts/prepare_datasets.py --loader-info hate_speech
+   python scripts/prepare_datasets.py --loader-info MultilingualToxicityLoader
+   python scripts/prepare_datasets.py --loader-info MemeSafetyBenchLoader
    ```
 
-3. **Load from a single source**
+3. **Load from specific sources**
    ```bash
-   # Hugging Face datasets
+   # Benchmark loaders (toxic/unsafe samples only)
+   python scripts/prepare_datasets.py --loader MultilingualToxicityLoader --max-samples 200
+   python scripts/prepare_datasets.py --loader MemeSafetyBenchLoader --max-samples 200
+   
+   # Legacy loaders (mixed toxic/non-toxic)
    python scripts/prepare_datasets.py --loader hate_speech --max-samples 1000
    python scripts/prepare_datasets.py --loader real_toxicity --toxicity-threshold 0.7
    

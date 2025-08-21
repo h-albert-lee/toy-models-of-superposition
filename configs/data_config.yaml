@@ -1,20 +1,36 @@
 # Configuration for dataset preparation
+# Updated to use recommended benchmark datasets
 
-datasets:
+# Primary benchmark datasets (recommended)
+benchmark_datasets:
+  # VLM benchmark - multimodal safety evaluation
+  meme_safety_bench:
+    loader: "MemeSafetyBenchLoader"
+    max_samples: 1000
+    description: "Primary VLM safety benchmark with meme images"
+    
+  # Text benchmark - standardized toxicity evaluation  
+  multilingual_toxicity:
+    loader: "MultilingualToxicityLoader"
+    max_samples: 1000
+    language: "en"
+    description: "Primary text toxicity benchmark (English subset)"
+
+# Legacy datasets (for comparison/supplementary use)
+legacy_datasets:
   jigsaw:
+    loader: "JigsawToxicityLoader"
     max_samples: 500
     toxicity_threshold: 0.6
     
   hate_speech:
+    loader: "HateSpeechOffensiveLoader"
     max_samples: 300
     
   real_toxicity:
+    loader: "RealToxicityPromptsLoader"
     max_samples: 300
     toxicity_threshold: 0.5
-    
-  multilingual:
-    max_samples: 200
-    language: "en"
 
 # Output settings
 output_settings:

@@ -30,6 +30,7 @@ tests/                    # pytest 단위 테스트
 | `model_name` | 사용하고자 하는 Hugging Face 모델 ID |
 | `device` | 모델을 올릴 디바이스 (`cuda`/`cpu`) |
 | `model_kwargs` | `from_pretrained` 에 전달할 추가 인자 |
+| `layers` | 여러 레이어를 순회하며 평가할 레이어 목록 |
 | `extraction_layer` | 활성화를 추출할 레이어 이름 |
 | `batch_size` | `VectorExtractor` 가 한 번에 처리할 배치 크기 |
 | `data_sources.toxic_neutral_pairs` | 일반 독성 벡터 계산용 텍스트 페어 파일 |
@@ -63,6 +64,8 @@ tests/                    # pytest 단위 테스트
    - GTV와 ITV의 코사인 유사도를 계산하여 두 벡터의 관계를 분석합니다.
 4. **`04_evaluate_precision_intervention.py`**
    - 독성 분류기를 이용해 개입 전후의 텍스트 독성 점수를 비교합니다.
+5. **`05_run_multi_layer_experiments.py`**
+   - 여러 레이어를 순회하며 유사도를 기록하고 가장 높은 레이어에 대해 정밀 개입 평가를 수행합니다.
 
 ## 6. 배치 처리와 성능
 

@@ -35,6 +35,7 @@ def main() -> None:
 
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
+    logger.info("정밀 개입 평가를 시작합니다...")
 
     wrapper = VLM_Wrapper(cfg["model_name"], device=cfg.get("device", "cuda"), **cfg.get("model_kwargs", {}))
     layer = cfg["intervention_layer"]

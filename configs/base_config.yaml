@@ -4,6 +4,10 @@ device: "cuda"
 # optional arguments passed to `from_pretrained`
 model_kwargs: {}
 
+# Layers to evaluate when running multi-layer experiments
+layers:
+  - "language_model.layers.0"
+
 extraction_layer: "language_model.layers.0"
 batch_size: 8
 data_sources:

@@ -104,6 +104,11 @@ The toolkit also includes a flexible, plugin-based data loading system for custo
    python scripts/04_evaluate_precision_intervention.py --config configs/base_config.yaml
    ```
 
+To scan multiple layers and automatically run precision evaluation on the best one, use:
+   ```bash
+   python scripts/05_run_multi_layer_experiments.py --config configs/base_config.yaml
+   ```
+
 Each script reads model and data settings from the configuration file and writes outputs to the directory specified by `output_dir`.
 
 ## Example configuration
@@ -112,6 +117,8 @@ Each script reads model and data settings from the configuration file and writes
 model_name: "llava-hf/llava-1.5-7b-hf"
 device: "cuda"
 model_kwargs: {}
+layers:
+  - "language_model.layers.0"
 extraction_layer: "language_model.layers.0"
 batch_size: 8
 data_sources:

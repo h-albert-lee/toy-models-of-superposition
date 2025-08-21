@@ -20,7 +20,7 @@ class VectorExtractor:
         self.batch_size = batch_size
         self.logger = logging.getLogger(__name__)
 
-    # ------------------------------------------------------------------
+# ------------------------------------------------------------------
     # General toxicity vector
     # ------------------------------------------------------------------
     def compute_gtv(self, data: Sequence[Dict[str, str]]) -> torch.Tensor:
@@ -41,7 +41,18 @@ class VectorExtractor:
             n_batch = neutral_texts[i : i + self.batch_size]
             toxic_act = self.wrapper.get_activations(t_batch, None, [self.layer])[self.layer]
             neutral_act = self.wrapper.get_activations(n_batch, None, [self.layer])[self.layer]
-            diffs.append(toxic_act - neutral_act)
+            
+            # --- 🔥 여기부터 수정 시작 🔥 ---
+
+            # 각 텐서의 시퀀스 길이 차원(dim=1)에 대해 평균을 계산합니다.
+            toxic_act_mean = toxic_act.mean(dim=1)
+            neutral_act_mean = neutral_act.mean(dim=1)
+
+            # 평균을 낸 벡터들로 차이를 계산합니다.
+            diffs.append(toxic_act_mean - neutral_act_mean)
+            
+            # --- 🔥 여기까지 수정 끝 🔥 ---
+
             self.logger.debug("Processed GTV batch %d-%d", i, i + len(t_batch))
 
         return torch.cat(diffs, dim=0).mean(dim=0)

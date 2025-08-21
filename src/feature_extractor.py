@@ -41,8 +41,14 @@ class VectorExtractor:
             n_batch = neutral_texts[i : i + self.batch_size]
             toxic_act = self.wrapper.get_activations(t_batch, None, [self.layer])[self.layer]
             neutral_act = self.wrapper.get_activations(n_batch, None, [self.layer])[self.layer]
-            
-            diffs.append(toxic_act - neutral_act)
+
+
+            # 각 텐서의 시퀀스 길이 차원(dim=1)에 대해 평균을 계산합니다.
+            toxic_act_mean = toxic_act.mean(dim=1)
+            neutral_act_mean = neutral_act.mean(dim=1)
+
+            # 평균을 낸 벡터들로 차이를 계산합니다.
+            diffs.append(toxic_act_mean - neutral_act_mean)
 
             self.logger.debug("Processed GTV batch %d-%d", i, i + len(t_batch))
 
@@ -73,7 +79,13 @@ class VectorExtractor:
             image_act = self.wrapper.get_activations(["" for _ in images], images, [self.layer])[self.layer]
             fused_act = self.wrapper.get_activations(texts, images, [self.layer])[self.layer]
 
-            residuals.append(fused_act - (text_act + image_act))
+            # 각 텐서의 시퀀스 길이 차원(dim=1)에 대해 평균을 계산합니다.
+            text_act_mean = text_act.mean(dim=1)
+            image_act_mean = image_act.mean(dim=1)
+            fused_act_mean = fused_act.mean(dim=1)
+
+            # 평균을 낸 벡터들로 연산을 수행합니다.
+            residuals.append(fused_act_mean - (text_act_mean + image_act_mean))
             
             self.logger.debug("Processed ITV batch %d-%d", i, i + len(batch))
 

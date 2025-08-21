@@ -1,0 +1,22 @@
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*.so
+
+# Test & tool caches
+.pytest_cache/
+.ipynb_checkpoints/
+
+# OS / Editor
+.DS_Store
+*.swp
+
+# Environments
+.env
+.venv/
+
+# Logs
+*.log
+
+# Data artifacts (optional)
+# data/**/*.tmp

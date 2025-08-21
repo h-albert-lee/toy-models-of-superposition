@@ -40,7 +40,7 @@ def main() -> None:
     raw = load_jsonl(cfg["data_sources"]["intrinsic_toxicity_cases"])
     data = []
     for item in raw:
-        img = Image.open(item["image_path"]).convert("RGB")
+        img = Image.open(item[cfg.get("image_key", "image_path")]).convert("RGB")
         data.append({"text": item["text"], "image": img})
 
     itv = extractor.compute_itv(data)

@@ -244,7 +244,7 @@ class MemeSafetyBenchLoader(BaseDataLoader):
         return {
             "name": "Meme-Safety-Bench (Negative Sentiment Only)",
             "description": "VLM safety benchmark, filtering for negative sentiment samples.",
-            "source": "oneonlee/Meme-Safety-Bench",
+            "source": "AIML-TUDA/Meme-Safety-Bench",
             "type": "multimodal_unsafe",
             "languages": ["en"],
             "size": "Variable, depends on filtering",
@@ -260,9 +260,9 @@ class MemeSafetyBenchLoader(BaseDataLoader):
         os.makedirs(image_save_dir, exist_ok=True)
         
         try:
-            dataset = load_dataset("oneonlee/Meme-Safety-Bench", split="test")
+            dataset = load_dataset("AIML-TUDA/Meme-Safety-Bench", split="test")
         except Exception as e:
-            self.logger.error(f"Failed to load oneonlee/Meme-Safety-Bench dataset: {e}")
+            self.logger.error(f"Failed to load AIML-TUDA/Meme-Safety-Bench dataset: {e}")
             return []
         
         unsafe_samples = []
